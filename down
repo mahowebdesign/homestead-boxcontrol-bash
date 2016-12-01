@@ -1,0 +1,67 @@
+#!/bin/bash
+STATUS="$(VBoxManage list runningvms)"
+if [ -n "$STATUS" ]; then
+
+    if [[ $STATUS == *"homestead-7"* ]]
+    then
+      STATUS='Homestead php7'
+    else
+      STATUS='Homestead php5.6'
+    fi
+
+    MENU="Choose one of the following options:\n\nCurrently running:$STATUS\n"
+    dialog --title 'Currently running:' --msgbox "$STATUS" 5 20
+
+    else
+    MENU="Choose one of the following options:\n\nCurrently not running a box"
+fi
+
+HEIGHT=15
+WIDTH=40
+CHOICE_HEIGHT=5
+BACKTITLE="Box controller, currently running $STATUS"
+TITLE="Choose to halt or start a box"
+
+OPTIONS=(1 "Stop homestead php5.6"
+         2 "Stop homestead php7"
+         3 "Stop php5.6 and start php7"
+         4 "Stop php7 and start php5.6"
+         5 "Quit")
+
+CHOICE=$(dialog --clear \
+                --backtitle "$BACKTITLE" \
+                --title "$TITLE" \
+                --menu "$MENU" \
+                $HEIGHT $WIDTH $CHOICE_HEIGHT \
+                "${OPTIONS[@]}" \
+                2>&1 >/dev/tty)
+
+clear
+case $CHOICE in
+        1)
+            echo "Halting homestead php5.6 box"
+            homestead halt
+            echo "Done"
+            ;;
+        2)
+            echo "Halting homestead php7 box"
+            cd /home/YOURFOLDER/Homestead
+            vagrant halt
+            echo "Done"
+            ;;
+        3)
+            homestead halt
+            cd /home/YOURFOLDER/Homestead
+            vagrant up
+            vagrant ssh
+            ;;
+        4)
+            cd /home/YOURFOLDER/Homestead
+            vagrant halt
+            homestead up
+            homestead ssh
+            ;;
+        5)
+            echo "Quiting"
+            ;;
+esac
